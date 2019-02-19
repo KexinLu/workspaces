@@ -14,6 +14,5 @@
 glide.lock
 
 # jetbrain
-.idea/*
-.idea
+.idea/
 vendor
