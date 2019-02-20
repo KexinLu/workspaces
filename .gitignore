@@ -13,3 +13,6 @@
 # jetbrain
 .idea/
 vendor
+
+*.swp
+_*
