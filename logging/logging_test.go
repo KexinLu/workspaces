@@ -10,6 +10,7 @@ import (
 	_ "github.com/sirupsen/logrus/hooks/test"
 	"github.com/sirupsen/logrus/hooks/test"
 	"github.com/sirupsen/logrus"
+	"errors"
 )
 
 var _ = Describe("Loggable Entity", func() {
@@ -72,7 +73,7 @@ var _ = Describe("Loggable Entity", func() {
 		})
 
 		It("should infof with info level", func() {
-			myEntity.Infof("txt %s", "final")
+			myEntity.Infof(logging.Fields{},"txt %s", "final")
 			Expect(hook.LastEntry().Level).To(Equal(logrus.InfoLevel))
 		})
 
@@ -81,28 +82,18 @@ var _ = Describe("Loggable Entity", func() {
 			Expect(hook.LastEntry().Level).To(Equal(logrus.WarnLevel))
 		})
 
-		It("should warning with warn level", func() {
-			myEntity.Warning("txt")
-			Expect(hook.LastEntry().Level).To(Equal(logrus.WarnLevel))
-		})
-
 		It("should warnf with warn level", func() {
-			myEntity.Warnf("txt %s", "final")
-			Expect(hook.LastEntry().Level).To(Equal(logrus.WarnLevel))
-		})
-
-		It("should warningf with warn level", func() {
-			myEntity.Warningf("txt %s", "final")
+			myEntity.Warnf(logging.Fields{},"txt %s", "final")
 			Expect(hook.LastEntry().Level).To(Equal(logrus.WarnLevel))
 		})
 
 		It("should error with error level", func() {
-			myEntity.Error("txt")
+			myEntity.Error(errors.New("some error"), "txt")
 			Expect(hook.LastEntry().Level).To(Equal(logrus.ErrorLevel))
 		})
 
 		It("should errorf with error level", func() {
-			myEntity.Errorf("txt %s", "final")
+			myEntity.Errorf(logging.Fields{}, errors.New("some error"), "txt %s", "final")
 			Expect(hook.LastEntry().Level).To(Equal(logrus.ErrorLevel))
 		})
 
@@ -112,18 +103,8 @@ var _ = Describe("Loggable Entity", func() {
 		})
 
 		It("should debugf with debug level", func() {
-			myEntity.Debugf("txt %s", "final")
+			myEntity.Debugf(logging.Fields{},"txt %s", "final")
 			Expect(hook.LastEntry().Level).To(Equal(logrus.DebugLevel))
-		})
-
-		It("should print with info level", func() {
-			myEntity.Print("txt")
-			Expect(hook.LastEntry().Level).To(Equal(logrus.InfoLevel))
-		})
-
-		It("should printf with info level", func() {
-			myEntity.Printf("txt %s", "final")
-			Expect(hook.LastEntry().Level).To(Equal(logrus.InfoLevel))
 		})
 
 		It("should fatal with fatal level", func() {
@@ -132,17 +113,17 @@ var _ = Describe("Loggable Entity", func() {
 		})
 
 		It("should fatalf with fatal level", func() {
-			myEntity.Fatalf("txt %s", "final")
+			myEntity.Fatalf(logging.Fields{},"txt %s", errors.New("some er"), "final")
 			Expect(hook.LastEntry().Level).To(Equal(logrus.FatalLevel))
 		})
 
 		It("should panic with panic level", func() {
-			myEntity.Panic("txt")
+			myEntity.Panic(errors.New("an panic error"), "txt")
 			Expect(hook.LastEntry().Level).To(Equal(logrus.PanicLevel))
 		})
 
 		It("should panicf with panic level", func() {
-			myEntity.Panicf("txt %s", "final")
+			myEntity.Panicf(logging.Fields{}, errors.New("an panic error"), "txt %s", "final")
 			Expect(hook.LastEntry().Level).To(Equal(logrus.PanicLevel))
 		})
 	})
