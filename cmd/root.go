@@ -21,10 +21,18 @@ var (
 		Use: "workspaces",
 		Short: "workspaces is a workspace management tool",
 		Long: `Set up your workspace with one click on a brand new work station, or navigate between your projects with ease`,
+		Args: func(cmd *cobra.Command, args []string) error {
+			if len(args) < 1 || args[0] != "init" {
+				initConfig()
+				return nil
+			}
+			return nil
+		},
 		Run: func(cmd *cobra.Command, args []string) {
-			//
+			cmd.Help()
 		},
 	}
+
 	rootLogger = logging.NewLoggableEntity(
 		"root",
 		logging.Fields{
@@ -33,6 +41,7 @@ var (
 	)
 )
 
+// Execute root command
 func Execute() {
 	rootLogger.Debug("Root Command execute")
 	if err := rootCmd.Execute(); err != nil {
@@ -47,9 +56,10 @@ const (
 	LOGDIR = "log_dir"
 )
 
+// init root command
 func init() {
 	cobra.OnInitialize(initLog)
-	cobra.OnInitialize(initConfig)
+	//cobra.OnInitialize(initConfig)
 
 	rootCmd.PersistentFlags().BoolVarP(&verbose,VERBOSE, "v", false, "-v or --verbose for debug information")
 	rootCmd.PersistentFlags().StringVarP(&cfgPath, CONFIG, "f", "", "config file (default is $HOME/.workspaces/config)")
@@ -59,7 +69,7 @@ func init() {
 	viper.BindPFlag(LOGDIR, rootCmd.PersistentFlags().Lookup(LOGDIR))
 
 	//rootCmd.AddCommand(addCmd)
-	//rootCmd.AddCommand(initCmd)
+	rootCmd.AddCommand(initCmd)
 }
 
 // config file sequence
@@ -101,6 +111,8 @@ func initConfig() {
 	}
 }
 
+// initialize logging.
+// When verbose is true, set log level to debug and info otherwise
 func initLog() {
 	if verbose {
 		logrus.SetLevel(logrus.DebugLevel)

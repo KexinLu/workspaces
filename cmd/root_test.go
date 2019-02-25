@@ -15,15 +15,15 @@ var _ = Describe("Root Command", func() {
 			It("Should set logrus level to debug", func() {
 				verbose = true
 				initLog()
-				Expect(logrus.GetLevel(), logrus.DebugLevel)
+				Expect(logrus.GetLevel()).To(Equal(logrus.DebugLevel))
 			})
 		})
 		Describe("InitLog", func() {
 			When("Initialized with verbose value to be false", func() {
-				It("Should set logrus level to debug", func() {
+				It("Should set logrus level to info", func() {
 					verbose = false
 					initLog()
-					Expect(logrus.GetLevel(), logrus.DebugLevel)
+					Expect(logrus.GetLevel()).To(Equal(logrus.InfoLevel))
 				})
 			})
 		})
@@ -50,7 +50,7 @@ var _ = Describe("Root Command", func() {
 				// should init with cfgPath
 				initConfig()
 
-				Expect(viper.Get("some_key"), "some_value")
+				Expect(viper.Get("some_key")).To(Equal("some_value"))
 			})
 		})
 
