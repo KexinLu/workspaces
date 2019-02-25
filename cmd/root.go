@@ -8,7 +8,7 @@ import (
 	"github.com/spf13/viper"
 	"github.com/mitchellh/go-homedir"
 	"github.com/spf13/afero"
-	"github.com/pkg/errors"
+	"workspaces/util"
 )
 
 var (
@@ -25,7 +25,7 @@ var (
 			//
 		},
 	}
-	rootLoggable = logging.NewLoggableEntity(
+	rootLogger = logging.NewLoggableEntity(
 		"root",
 		logging.Fields{
 			"module": "root",
@@ -34,7 +34,7 @@ var (
 )
 
 func Execute() {
-	rootLoggable.Debug("Root Command execute")
+	rootLogger.Debug("Root Command execute")
 	if err := rootCmd.Execute(); err != nil {
 		logrus.Error(err)
 		os.Exit(1)
@@ -67,57 +67,38 @@ func init() {
 // 2. default at ~/.workspaces
 func initConfig() {
 	if cfgPath != "" {
-		rootLoggable.Debugf(logging.Fields{"path": cfgPath}, "setting config path from flag")
+		rootLogger.Debugf(logging.Fields{"path": cfgPath}, "setting config path from flag")
 		viper.SetConfigFile(cfgPath)
 	} else {
-		rootLoggable.Debug("Config path not provided, using default $HOME/.workspaces/config")
+		rootLogger.Debug("Config path not provided, using default $HOME/.workspaces/config")
 		// Get home dir
 		if homeDir, err := homedir.Dir(); err != nil {
-			rootLoggable.Panic(err,"failed to get home directory", )
+			rootLogger.Panic(err,"failed to get home directory", )
+			os.Exit(1)
 		} else {
 			path := homeDir + `/.workspaces`
-			rootLoggable.Debug("Using path " + path)
-			ensureBaseDir(path)
+			rootLogger.Debug("Using path " + path)
+			if err := util.EnsureDirExist(path, AppFs); err != nil {
+				rootLogger.ErrorWithFields( logging.Fields{ "path": path }, err, "Failed to ensure base directory" )
+				os.Exit(1)
+			}
 
-			viper.SetConfigType("json")
+			viper.SetConfigType("yaml")
 			viper.AddConfigPath(path)
 			viper.SetConfigName("config")
 		}
 	}
 
-	rootLoggable.Debug("Config Automatic Env")
+	rootLogger.Debug("Config Automatic Env")
 	viper.AutomaticEnv()
 
 	if err := viper.ReadInConfig(); err != nil {
-		rootLoggable.Error(err, "Cannot load config")
-		rootLoggable.Info( "No config file provided")
-		rootLoggable.Info("create ~/.workspaces")
-		rootLoggable.Info("or use --config=/path/to/config")
-		rootLoggable.Info("to specify config file")
+		rootLogger.Error(err, "Cannot load config")
+		rootLogger.Info( "No config file provided")
+		rootLogger.Info("create ~/.workspaces")
+		rootLogger.Info("or use --config=/path/to/config")
+		rootLogger.Info("to specify config file")
 	}
-}
-
-func ensureBaseDir(path string) {
-	rootLoggable.Debug("Trying to confirm directory exist")
-	if exist, err := afero.DirExists(AppFs, path); err != nil {
-		rootLoggable.Errorf(
-			logging.Fields{
-				"path": path,
-			},
-			err,
-			"failed to check if base directory exist",
-		)
-		os.Exit(1)
-	} else {
-		if !exist {
-			rootLoggable.Error(
-				errors.New(FOLDER_NOT_FOUND),
-				"base folder ~/.workspaces not found",
-			)
-			os.Exit(1)
-		}
-	}
-	rootLoggable.Debug("Found base directory")
 }
 
 func initLog() {
@@ -127,4 +108,3 @@ func initLog() {
 		logrus.SetLevel(logrus.InfoLevel)
 	}
 }
-
