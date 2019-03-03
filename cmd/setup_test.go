@@ -8,23 +8,27 @@ import (
 	"github.com/sirupsen/logrus"
 	"io/ioutil"
 	"workspaces/util"
+	"workspaces/_vendor-20190219161801/github.com/mitchellh/go-homedir"
+	"fmt"
 )
 
 var _ = Describe("Init Command", func() {
 	Describe("createDirIfNotExist", func() {
 		BeforeEach(func() {
-			fs = afero.NewMemMapFs()
+			AppFs = afero.NewMemMapFs()
 			logrus.SetOutput(ioutil.Discard)
 		})
 		When("base directory does not exist", func() {
 			It("should create the directory", func() {
-				if exist, err := afero.DirExists(fs, `~/`+BASE_DIRECTORY_PATH); exist  {
+				home, _ := homedir.Dir()
+				basePath := fmt.Sprintf("%s/%s", home, BASE_DIRECTORY_PATH)
+				if exist, err := afero.DirExists(AppFs, basePath); exist  {
 					Fail("Folder should not exist")
 				} else if err != nil {
 					Fail("Failed to detect if directory exist")
 				}
 				createBaseDirIfNotExist()
-				if exist, err := afero.DirExists(fs, `~/`+BASE_DIRECTORY_PATH); err != nil {
+				if exist, err := afero.DirExists(AppFs, basePath); err != nil {
 					Fail("Failed to detect if directory exist")
 				} else if !exist {
 					Fail("Failed to create base directory")
@@ -32,15 +36,17 @@ var _ = Describe("Init Command", func() {
 			})
 		})
 	})
+
 	Describe("createSampleConfig", func() {
 		BeforeEach(func() {
-			fs = afero.NewMemMapFs()
+			AppFs = afero.NewMemMapFs()
 			logrus.SetOutput(ioutil.Discard)
 		})
 		When("called", func() {
 			It("should create a config with default values", func() {
 				cfg := createSampleConfig()
 				Expect(cfg.Get("workspace_dir")).To(Equal("~/workspaces"))
+				Expect(cfg.Get("projects")).To(Equal(make(map[string]interface{})))
 			})
 		})
 	})
@@ -57,7 +63,3 @@ var _ = Describe("Init Command", func() {
 		})
 	})
 })
-
-
-
-

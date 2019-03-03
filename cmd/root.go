@@ -15,6 +15,7 @@ var (
 	cfgPath string
 	verbose bool
 	logDir string
+	vipCfg *viper.Viper
 	AppFs = afero.NewOsFs()
 
 	rootCmd = &cobra.Command{
@@ -61,22 +62,25 @@ func init() {
 	cobra.OnInitialize(initLog)
 
 	rootCmd.PersistentFlags().BoolVarP(&verbose,VERBOSE, "v", false, "-v or --verbose for debug information")
-	rootCmd.PersistentFlags().StringVarP(&cfgPath, CONFIG, "f", "", "config file (default is $HOME/.workspaces/config)")
+	rootCmd.PersistentFlags().StringVarP(&cfgPath, CONFIG, "c", "", "config file (default is $HOME/.workspaces/config)")
 	rootCmd.PersistentFlags().StringVar(&logDir, LOGDIR,"", "log directory, default to ~/.workspaces/log")
 	viper.BindPFlag(VERBOSE, rootCmd.PersistentFlags().Lookup(VERBOSE))
 	viper.BindPFlag(CONFIG, rootCmd.PersistentFlags().Lookup(CONFIG))
 	viper.BindPFlag(LOGDIR, rootCmd.PersistentFlags().Lookup(LOGDIR))
 
-	rootCmd.AddCommand(initCmd)
+	rootCmd.AddCommand(setupCmd)
+	rootCmd.AddCommand(listCmd)
 }
 
 // config file sequence
 // 1. flag
 // 2. default at ~/.workspaces
 func initConfig() {
+	vipCfg = viper.New()
+	vipCfg.SetConfigType("json")
 	if cfgPath != "" {
 		rootLogger.Debugf(logging.Fields{"path": cfgPath}, "setting config path from flag")
-		viper.SetConfigFile(cfgPath)
+		vipCfg.SetConfigFile(cfgPath)
 	} else {
 		rootLogger.Debug("Config path not provided, using default $HOME/.workspaces/config")
 		// Get home dir
@@ -87,20 +91,19 @@ func initConfig() {
 			path := homeDir + `/.workspaces`
 			rootLogger.Debug("Using path " + path)
 			if err := util.EnsureDirExist(path, AppFs); err != nil {
-				rootLogger.ErrorWithFields( logging.Fields{ "path": path }, err, "Failed to ensure base directory" )
+				rootLogger.ErrorWithFields(logging.Fields{ "path": path }, err, "Failed to ensure base directory")
 				os.Exit(1)
 			}
 
-			viper.SetConfigType("json")
-			viper.AddConfigPath(path)
-			viper.SetConfigName("config")
+			vipCfg.AddConfigPath(path)
+			vipCfg.SetConfigName("config")
 		}
 	}
 
 	rootLogger.Debug("Config Automatic Env")
 	viper.AutomaticEnv()
 
-	if err := viper.ReadInConfig(); err != nil {
+	if err := vipCfg.ReadInConfig(); err != nil {
 		rootLogger.Error(err, "Cannot load config")
 		rootLogger.Info( "No config file provided")
 		rootLogger.Info("create ~/.workspaces")
