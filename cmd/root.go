@@ -59,7 +59,6 @@ const (
 // init root command
 func init() {
 	cobra.OnInitialize(initLog)
-	//cobra.OnInitialize(initConfig)
 
 	rootCmd.PersistentFlags().BoolVarP(&verbose,VERBOSE, "v", false, "-v or --verbose for debug information")
 	rootCmd.PersistentFlags().StringVarP(&cfgPath, CONFIG, "f", "", "config file (default is $HOME/.workspaces/config)")
@@ -68,7 +67,6 @@ func init() {
 	viper.BindPFlag(CONFIG, rootCmd.PersistentFlags().Lookup(CONFIG))
 	viper.BindPFlag(LOGDIR, rootCmd.PersistentFlags().Lookup(LOGDIR))
 
-	//rootCmd.AddCommand(addCmd)
 	rootCmd.AddCommand(initCmd)
 }
 
@@ -93,7 +91,7 @@ func initConfig() {
 				os.Exit(1)
 			}
 
-			viper.SetConfigType("yaml")
+			viper.SetConfigType("json")
 			viper.AddConfigPath(path)
 			viper.SetConfigName("config")
 		}

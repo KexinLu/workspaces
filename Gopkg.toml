@@ -8,8 +8,13 @@
 
 required = [
     "github.com/onsi/gomega",
-    "github.com/spf13/viper"
+    "github.com/spf13/viper",
+    "github.com/mitchellh/mapstructure"
 ]
+
+[[constraint]]
+  name = "github.com/mitchellh/mapstructure"
+  version = "1.1.2"
 
 [[constraint]]
   name = "github.com/spf13/cobra"
@@ -38,6 +43,10 @@ required = [
 [[override]]
   name = "gopkg.in/fsnotify.v1"
   source = "gopkg.in/fsnotify/fsnotify.v1"
+
+[[constraint]]
+  name = "github.com/manifoldco/promptui"
+  version = "0.3.2"
 
 [prune]
   go-tests = true

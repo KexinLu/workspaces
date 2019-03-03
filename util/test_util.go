@@ -3,41 +3,35 @@ package util
 import (
 	"os"
 	"io"
-	"sync"
-	"bufio"
 	"bytes"
+	"github.com/sirupsen/logrus"
 )
 
 type StdoutWatcher struct {
-	wg sync.WaitGroup
-	pipe io.ReadCloser
-	buf []byte
+	r *os.File
+	w *os.File
+	old *os.File
 }
 
-func GetNewStdoutWatcher() StdoutWatcher {
-	return StdoutWatcher{
-		sync.WaitGroup{},
-		io.ReadCloser(os.Stdout),
-		make([]byte, 100, 1000),
-	}
+func (s *StdoutWatcher) Start() {
+	s.old = os.Stdout
+	r, w, _ := os.Pipe()
+	s.r  = r
+	s.w = w
+	os.Stdout = s.w
 }
 
-func (s *StdoutWatcher) Watch() {
-	s.wg.Add(1)
+func (s *StdoutWatcher) Stop() string {
 	defer func() {
-		n, _ := s.pipe.Read(s.buf)
-		buffer := s.buf[0:n]
-
+		s.r.Close()
+		os.Stdout = s.old
 	}()
-	pr := bufio.NewReader(os.Stdout)
+	var buf bytes.Buffer
+	s.w.Close()
+	_, err := io.Copy(&buf, s.r)
+	if err != nil {
+		logrus.Fatal(err)
+	}
 
-	go func() {
-		for {
-			pr.ReadBytes('\n')
-		}
-	}()
-	s.wg.Wait()
-}
-
-func (s *StdoutWatcher) Close() string {
+	return buf.String()
 }

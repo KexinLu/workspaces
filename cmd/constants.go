@@ -1,3 +1,3 @@
 package cmd
 
-const BASE_DIRECTORY_PATH = "~/.workspaces"
+const BASE_DIRECTORY_PATH = ".workspaces"
