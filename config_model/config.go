@@ -11,4 +11,3 @@ type Project struct {
 	Path string `mapstructure:"path"`
 	IsGit bool `mapstructure:"git"`
 }
-

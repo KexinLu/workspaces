@@ -16,18 +16,13 @@ var (
 		Short: "Show all projects managed by workspaces",
 		Long: `Show all projects managed by workspaces in the config file`,
 		Run: func(cmd *cobra.Command, args []string) {
-			conf := Config{}
-			if err := hydrateConfig(&conf); err != nil {
-				fmt.Println("failed to hydrate config")
-			} else {
-				printAllProjects(&conf)
-			}
+			initConfig()
+			printAllProjects(&cfg)
 		},
 	}
 )
 
 func init() {
-	cobra.OnInitialize(initConfig)
 	listLogger.Debug("initializing list logger")
 	listLogger = logging.NewLoggableEntity("list", logging.Fields{ "module": "list" })
 }

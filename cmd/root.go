@@ -9,10 +9,12 @@ import (
 	"github.com/mitchellh/go-homedir"
 	"github.com/spf13/afero"
 	"workspaces/util"
+	"workspaces/config_model"
 )
 
 var (
 	cfgPath string
+	cfg config_model.Config
 	verbose bool
 	logDir string
 	vipCfg *viper.Viper
@@ -23,7 +25,7 @@ var (
 		Short: "workspaces is a workspace management tool",
 		Long: `Set up your workspace with one click on a brand new work station, or navigate between your projects with ease`,
 		Args: func(cmd *cobra.Command, args []string) error {
-			if len(args) < 1 || args[0] != "init" {
+			if len(args) < 1 || args[0] != "setup" {
 				initConfig()
 				return nil
 			}
@@ -70,6 +72,7 @@ func init() {
 
 	rootCmd.AddCommand(setupCmd)
 	rootCmd.AddCommand(listCmd)
+	rootCmd.AddCommand(scanCmd)
 }
 
 // config file sequence
@@ -78,6 +81,7 @@ func init() {
 func initConfig() {
 	vipCfg = viper.New()
 	vipCfg.SetConfigType("json")
+	rootLogger.Debug("trying to hydrate config")
 	if cfgPath != "" {
 		rootLogger.Debugf(logging.Fields{"path": cfgPath}, "setting config path from flag")
 		vipCfg.SetConfigFile(cfgPath)
@@ -88,15 +92,15 @@ func initConfig() {
 			rootLogger.Panic(err,"failed to get home directory", )
 			os.Exit(1)
 		} else {
-			path := homeDir + `/.workspaces`
-			rootLogger.Debug("Using path " + path)
-			if err := util.EnsureDirExist(path, AppFs); err != nil {
-				rootLogger.ErrorWithFields(logging.Fields{ "path": path }, err, "Failed to ensure base directory")
+			cfgDir := homeDir + `/.workspaces`
+			cfgPath = cfgDir + `/config.json`
+			rootLogger.Debug("Using path " + cfgPath)
+			if err := util.EnsureDirExist(cfgDir, AppFs); err != nil {
+				rootLogger.ErrorWithFields(logging.Fields{ "path": cfgDir }, err, "Failed to ensure base directory")
 				os.Exit(1)
 			}
 
-			vipCfg.AddConfigPath(path)
-			vipCfg.SetConfigName("config")
+			vipCfg.SetConfigFile(cfgPath)
 		}
 	}
 
@@ -109,6 +113,11 @@ func initConfig() {
 		rootLogger.Info("create ~/.workspaces")
 		rootLogger.Info("or use --config=/path/to/config")
 		rootLogger.Info("to specify config file")
+	}
+
+	if err := hydrateConfig(&cfg); err != nil {
+		rootLogger.Fatal(err.Error(), "fail to hydrate config")
+		os.Exit(1)
 	}
 }
 
