@@ -32,7 +32,7 @@ var (
 			return nil
 		},
 		Run: func(cmd *cobra.Command, args []string) {
-			cmd.Help()
+			cdCmd.Run(cmd, args)
 		},
 	}
 
@@ -74,6 +74,7 @@ func init() {
 	rootCmd.AddCommand(listCmd)
 	rootCmd.AddCommand(pickCmd)
 	rootCmd.AddCommand(scanCmd)
+	rootCmd.AddCommand(cdCmd)
 }
 
 // config file sequence
