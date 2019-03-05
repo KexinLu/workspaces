@@ -7,13 +7,16 @@ import (
 	"fmt"
 	"encoding/json"
 	"github.com/spf13/viper"
+	"github.com/fatih/color"
 )
 
 var (
 	listLogger logging.LoggableEntity
+	detail bool
 
 	listCmd = &cobra.Command{
 		Use: "list",
+		Aliases: []string{"ls"},
 		Short: "Show all projects managed by workspaces",
 		Long: `Show all projects managed by workspaces in the config file`,
 		Run: func(cmd *cobra.Command, args []string) {
@@ -26,22 +29,33 @@ var (
 func init() {
 	listLogger.Debug("initializing list logger")
 	listLogger = logging.NewLoggableEntity("list", logging.Fields{ "module": "list" })
+
+	listCmd.Flags().BoolVarP(&detail, "detail","d", false, "show list with detail")
+	viper.BindPFlag("with_detail", listCmd.Flags().Lookup("with_detail"))
 }
 
 func printAllProjects(c *Config)  {
 	listLogger.Debug("Printing all projects")
 	listLogger.Debug(fmt.Sprintf("We have %v projects", len(c.Projects)))
+	if len(c.Projects) == 0 {
+		fmt.Println("No projects found in registry, use `workpsaces scan /path/to/dir` or `workspaces pick /path/to/project` to add project ")
+	}
 	for _, p := range c.Projects {
 		listLogger.Debugf(logging.Fields{"name": p.Name, "path": p.Path }, "project")
-		if jsb, err := json.MarshalIndent(p, "", "  "); err != nil {
-			listLogger.ErrorWithFields(
-				logging.Fields{
-					"error": err.Error(),
-					"name": p.Name,
-				},
-				err,"failed to marshal project")
+		if detail {
+			if jsb, err := json.MarshalIndent(p, "", "  "); err != nil {
+				listLogger.ErrorWithFields(
+					logging.Fields{
+						"error": err.Error(),
+						"name": p.Name,
+					},
+					err,"failed to marshal project")
+			} else {
+				fmt.Println(string(jsb))
+			}
 		} else {
-			fmt.Println(string(jsb))
+			highlight := color.New(color.FgWhite, color.BgBlue).SprintFunc()
+			fmt.Printf("%s: %s\n", highlight(p.Name), p.Path)
 		}
 	}
 }

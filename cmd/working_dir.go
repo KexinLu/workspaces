@@ -8,14 +8,16 @@ import (
 	"github.com/pkg/errors"
 	"os"
 	//"bufio"
+	"fmt"
 )
 
 var (
 	moveLogger logging.LoggableEntity
 
-	cdCmd = &cobra.Command{
-		Use: "cd",
-		Long: `change directory to project`,
+	wdCmd = &cobra.Command{
+		Use: "wd",
+		Short: `show project path`,
+		Long: `show absolute path of project`,
 		Run: func(cmd *cobra.Command, args []string) {},
 		Args: func(cmd *cobra.Command, args []string) error {
 			initConfig()
@@ -25,7 +27,7 @@ var (
 					moveLogger.Fatal(err.Error())
 					return err
 				} else {
-					moveTo(v)
+					wd(v)
 				}
 			} else {
 				prompt := buildProjsPrompt()
@@ -37,7 +39,7 @@ var (
 					os.Exit(0)
 				} else{
 					moveLogger.Debug("moving")
-					moveTo(cfg.Projects[name])
+					wd(cfg.Projects[name])
 				}
 			}
 			return nil
@@ -51,7 +53,7 @@ func init() {
 }
 
 func buildProjsPrompt() promptui.Select {
-	keys := make([]string, len(cfg.Projects))
+	keys := make([]string, 0)
 	for k := range cfg.Projects {
 		keys = append(keys, k)
 	}
@@ -61,14 +63,8 @@ func buildProjsPrompt() promptui.Select {
 	}
 }
 
-func moveTo(p Project) {
-	moveLogger.Debug("moving to " + p.Path)
-	//command := fmt.Sprintf("cd %s", p.Path)
-	//fmt.Fprint(os.Stdout, command)
-	os.Setenv("PWD", p.Path)
-	//w := bufio.NewWriter(os.Stdout)
-	//w.WriteString(command)
-	//w.WriteString("\n")
-	//w.Flush()
+func wd(p Project) {
+	moveLogger.Debug("showing path: " + p.Path)
+	fmt.Fprint(os.Stdout, fmt.Sprintf("%s\n", p.Path))
 }
 

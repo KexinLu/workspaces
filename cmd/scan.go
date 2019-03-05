@@ -53,19 +53,21 @@ func scanDir(dirs []string) {
 			scanLogger.Fatal("Failed to scan base dir: ", cfg.BaseDir,  err.Error())
 		} else {
 			for _, fi := range fis {
-				path := fmt.Sprintf(`%s/%s`, dir, fi.Name())
-				p := Project{
-					Name:  fi.Name(),
-					Path:  path,
-					IsGit: false,
-				}
-				prompt := buildPrompt(fi)
-				if result, err := prompt.Run(); err != nil {
-					scanLogger.Error(err, "Failed to get a response")
-					os.Exit(1)
-				} else {
-					if result == "y" || result == "Y" {
-						appendToProjMap(p, &cfg, forceScan)
+				if fi.IsDir() {
+					path := fmt.Sprintf(`%s/%s`, dir, fi.Name())
+					if p, err := buildProject(path); err != nil {
+						scanLogger.Fatal("Failed to build project: ", path,  err.Error())
+						os.Exit(1)
+					} else {
+						prompt := buildPromptP(p)
+						if result, err := prompt.Run(); err != nil {
+							scanLogger.Error(err, "Failed to get a response")
+							os.Exit(1)
+						} else {
+							if result == "y" || result == "Y" {
+								appendToProjMap(p, &cfg, forceScan)
+							}
+						}
 					}
 				}
 			}
