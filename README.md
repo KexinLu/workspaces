@@ -2,6 +2,7 @@
 A CLI to manage your workspaces
 
 ## TODO:
+```
 [ ] remove command: to remove project from registry
 [ ] alias: allow project to have alias
 [ ] git: storing remote in git projects
@@ -10,6 +11,7 @@ A CLI to manage your workspaces
 -----
 [ ] add docker support
 [ ] scratch container to control environment
+```
 
 ## usage
 ```
