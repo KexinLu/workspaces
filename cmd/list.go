@@ -6,6 +6,7 @@ import (
 	. "workspaces/config_model"
 	"fmt"
 	"encoding/json"
+	"github.com/spf13/viper"
 )
 
 var (
@@ -45,9 +46,10 @@ func printAllProjects(c *Config)  {
 	}
 }
 
-func hydrateConfig(c *Config) error {
-	listLogger.Debug("Hydrating config")
-	if err := vipCfg.Unmarshal(c); err != nil {
+func hydrateConfig(vc *viper.Viper, c *Config) error {
+	listLogger.Debug("hydrating")
+	listLogger.Debug((*vc).AllSettings())
+	if err := (*vc).Unmarshal(c); err != nil {
 		listLogger.Error(err, "failed to unmarshal config")
 	}
 	return nil

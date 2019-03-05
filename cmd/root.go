@@ -72,6 +72,7 @@ func init() {
 
 	rootCmd.AddCommand(setupCmd)
 	rootCmd.AddCommand(listCmd)
+	rootCmd.AddCommand(pickCmd)
 	rootCmd.AddCommand(scanCmd)
 }
 
@@ -107,17 +108,22 @@ func initConfig() {
 	rootLogger.Debug("Config Automatic Env")
 	viper.AutomaticEnv()
 
+	rootLogger.Debug("Reading config from file")
 	if err := vipCfg.ReadInConfig(); err != nil {
 		rootLogger.Error(err, "Cannot load config")
 		rootLogger.Info( "No config file provided")
-		rootLogger.Info("create ~/.workspaces")
+		rootLogger.Info("run workspaces setup to setup")
 		rootLogger.Info("or use --config=/path/to/config")
 		rootLogger.Info("to specify config file")
 	}
 
-	if err := hydrateConfig(&cfg); err != nil {
+	if err := hydrateConfig(vipCfg, &cfg); err != nil {
 		rootLogger.Fatal(err.Error(), "fail to hydrate config")
 		os.Exit(1)
+	}
+
+	if cfg.Projects == nil {
+		cfg.Projects = make(map[string]config_model.Project)
 	}
 }
 

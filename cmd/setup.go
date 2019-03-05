@@ -12,6 +12,7 @@ import (
 	"bufio"
 	"errors"
 	"github.com/spf13/afero"
+	"workspaces/config_model"
 )
 
 var (
@@ -82,7 +83,7 @@ func createBaseDirIfNotExist() {
 }
 
 var defaultCfg = map[string]interface{}{
-	"projects": make(map[string]interface{}),
+	"projects": make(map[string]config_model.Project,0),
 }
 
 func createSampleConfig() *viper.Viper {

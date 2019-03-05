@@ -6,9 +6,10 @@ import (
 	"github.com/spf13/afero"
 	"github.com/manifoldco/promptui"
 	"fmt"
-	"workspaces/config_model"
-	"encoding/json"
+	. "workspaces/config_model"
 	"github.com/pkg/errors"
+	"github.com/KexinLu/goisgit"
+	"github.com/spf13/viper"
 	"os"
 )
 
@@ -19,56 +20,85 @@ var (
 		Use: "scan",
 		Short: "Show all projects managed by workspaces",
 		Long: `Show all projects managed by workspaces in the config file`,
-		Run: func(cmd *cobra.Command, args []string) {
+		Args: func(cmd *cobra.Command, args []string) error {
 			initConfig()
-			scanWorkDir()
+			if len(args) == 0 {
+				scanBaseDir()
+			} else if len(args) > 0{
+				scanDir(args[0:])
+			}
+			return nil
 		},
+		Run: func(cmd *cobra.Command, args []string) {},
 	}
+	forceScan bool
 )
 
 func init() {
 	scanLogger = logging.NewLoggableEntity("scan", logging.Fields{ "module": "scan" })
 	scanLogger.Debug("initializing scan logger")
+
+	scanCmd.Flags().BoolVarP(&forceScan, "force","f", false, "force replace existing projects")
+	viper.BindPFlag("forceScan", rootCmd.PersistentFlags().Lookup(VERBOSE))
 }
 
-func scanWorkDir() {
-	fs := afero.NewOsFs()
-	scanLogger.DebugWithFields(logging.Fields{"dir": cfg.BaseDir}, "scanning working dir")
-	if fis, err := afero.ReadDir(fs, cfg.BaseDir); err != nil {
-		scanLogger.Fatal("Failed to scan base dir: ", err.Error())
-	} else {
-		for _, fi := range fis {
-			 p := config_model.Project{
-				Name: fi.Name(),
-				Path: fmt.Sprintf(`%s/%s`, cfg.BaseDir, fi.Name()),
-				IsGit: false,
-			}
-			//bs, _ := json.MarshalIndent(p, "", "  ")
-			prompt := promptui.Prompt{
-				Label:    "Add project? (y/n) " + fi.Name(),
-				Validate: func(s string) error {
-					allowed := map[string]interface{}{"y": 0, "n":0, "Y":0, "N":0}
-					if _, ok := allowed[s]; !ok {
-						return errors.New("only y/n allowed")
-					}
-					return nil
-				},
-				Default:  "n",
-			}
+func scanBaseDir() {
+	scanDir([]string{cfg.BaseDir})
+}
 
-			if result, err := prompt.Run(); err != nil {
-				scanLogger.Error(err, "Failed to get a response")
-			} else {
-				if result == "y" || result == "Y" {
-					cfg.Projects = append(cfg.Projects, p)
+func scanDir(dirs []string) {
+	for _, dir := range dirs {
+		scanLogger.DebugWithFields(logging.Fields{"dir": dir}, "scanning working dir")
+		if fis, err := afero.ReadDir(AppFs, dir); err != nil {
+			scanLogger.Fatal("Failed to scan base dir: ", cfg.BaseDir,  err.Error())
+		} else {
+			for _, fi := range fis {
+				path := fmt.Sprintf(`%s/%s`, dir, fi.Name())
+				p := Project{
+					Name:  fi.Name(),
+					Path:  path,
+					IsGit: false,
+				}
+				prompt := buildPrompt(fi)
+				if result, err := prompt.Run(); err != nil {
+					scanLogger.Error(err, "Failed to get a response")
+					os.Exit(1)
+				} else {
+					if result == "y" || result == "Y" {
+						appendToProjMap(p, &cfg, forceScan)
+					}
 				}
 			}
-		}
-		if cfgBytes, err := json.MarshalIndent(cfg, "", "  "); err != nil {
-			scanLogger.Fatal(err.Error(), "Failed to marshal config")
-			os.Exit(1)
-		} else {
-			afero.WriteFile(AppFs, cfgPath, cfgBytes, 0755)
+			printToConfig()
 		}
 	}
+}
+
+func buildPromptP(p Project) promptui.Prompt {
+	return promptui.Prompt{
+		Label:    "Add project? (y/n) " + p.Name,
+		Validate: func(s string) error {
+			allowed := map[string]interface{}{"y": 0, "n":0, "Y":0, "N":0}
+			if _, ok := allowed[s]; !ok {
+				return errors.New("only y/n allowed")
+			}
+			return nil
+		},
+		Default:  "n",
+	}
+}
+
+func appendToProjMap(proj Project, cfg *Config, force bool) {
+	if _, exist := cfg.Projects[proj.Name]; exist && !force {
+		scanLogger.Error(errors.New("project_exist_in_config") , "Refuse to add the same project")
+	}
+
+	if isGit, err := is_git.IsGitDir(proj.Path); err != nil {
+		scanLogger.Error(errors.New("failed_to_confirm_if_is_git") , err.Error())
+	} else if isGit {
+		proj.IsGit = true
+	}
+
+
+	cfg.Projects[proj.Name] = proj
 }

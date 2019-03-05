@@ -53,6 +53,10 @@ required = [
   name = "github.com/AlecAivazis/survey"
   version = "1.8.2"
 
+[[constraint]]
+  name = "github.com/KexinLu/goisgit"
+  version = "1.0.0"
+
 [prune]
   go-tests = true
 
