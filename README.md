@@ -2,6 +2,7 @@
 A CLI to manage your workspaces
 
 ## usage
+```
   workspaces [flags]
   workspaces [command]
 
@@ -18,6 +19,7 @@ Flags:
   -h, --help             help for workspaces
       --log_dir string   log directory, default to ~/.workspaces/log
   -v, --verbose          -v or --verbose for debug information
+```
 
 ## bash
 to enable easy access for projects, add the following to bashrc
