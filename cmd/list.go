@@ -54,8 +54,8 @@ func printAllProjects(c *Config)  {
 				fmt.Println(string(jsb))
 			}
 		} else {
-			highlight := color.New(color.FgWhite, color.BgBlue).SprintFunc()
-			fmt.Printf("%s: %s\n", highlight(p.Name), p.Path)
+			highlight := color.New(color.FgHiBlack, color.BgHiCyan).SprintFunc()
+			fmt.Printf("  %s(%s) : %s\n", highlight(p.Name), p.Alias, p.Path)
 		}
 	}
 }

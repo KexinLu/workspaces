@@ -101,6 +101,5 @@ func appendToProjMap(proj Project, cfg *Config, force bool) {
 		proj.IsGit = true
 	}
 
-
 	cfg.Projects[proj.Name] = proj
 }

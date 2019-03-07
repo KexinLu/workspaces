@@ -75,6 +75,8 @@ func init() {
 	rootCmd.AddCommand(pickCmd)
 	rootCmd.AddCommand(scanCmd)
 	rootCmd.AddCommand(wdCmd)
+	rootCmd.AddCommand(removeCmd)
+	rootCmd.AddCommand(aliasCmd)
 }
 
 // config file sequence
