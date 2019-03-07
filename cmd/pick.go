@@ -20,8 +20,8 @@ var (
 
 	pickCmd = &cobra.Command{
 		Use: "pick",
-		Short: "Add directory to managed projects",
-		Long: `Add directory to managed projects`,
+		Short: "Add directory to registry ",
+		Long: `Add directory to registry`,
 		Args: func(cmd *cobra.Command, args []string) error {
 			initConfig()
 			pickDirs(args[0:])

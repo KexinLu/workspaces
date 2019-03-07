@@ -17,8 +17,8 @@ var (
 	listCmd = &cobra.Command{
 		Use: "list",
 		Aliases: []string{"ls"},
-		Short: "Show all projects managed by workspaces",
-		Long: `Show all projects managed by workspaces in the config file`,
+		Short: "Show all projects in registry",
+		Long: `Show all projects in registry`,
 		Run: func(cmd *cobra.Command, args []string) {
 			initConfig()
 			printAllProjects(&cfg)

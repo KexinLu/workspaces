@@ -24,7 +24,7 @@ var (
 	setupCmd = &cobra.Command{
 		Use: "setup",
 		Short: "initialize ~/.workspaces folder and ~/.workspaces/config",
-		Long: `Set up your workspace with one click on a brand new work station, or navigate between your projects with ease`,
+		Long: `Navigate between your projects with ease`,
 		Run: func(cmd *cobra.Command, args []string) {
 			cfg := createSampleConfig()
 			if toStdout {
