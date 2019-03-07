@@ -10,6 +10,7 @@ import (
 	"github.com/spf13/afero"
 	"workspaces/util"
 	"workspaces/config_model"
+	"fmt"
 )
 
 var (
@@ -101,6 +102,7 @@ func initConfig() {
 			rootLogger.Debug("Using path " + cfgPath)
 			if err := util.EnsureDirExist(cfgDir, AppFs); err != nil {
 				rootLogger.ErrorWithFields(logging.Fields{ "path": cfgDir }, err, "Failed to ensure base directory")
+				fmt.Println("Did you run setup? run setup with `workspaces setup`")
 				os.Exit(1)
 			}
 
