@@ -13,13 +13,18 @@ A CLI to manage your workspaces
 
 ## usage
 ```
+Navigate between your projects with ease
+
+Usage:
   workspaces [flags]
   workspaces [command]
 
 Available Commands:
+  alias       Set alias to project
   help        Help about any command
-  list        Show all projects managed by workspaces
-  pick        Add directory to managed projects
+  list        Show all projects in registry
+  pick        Add directory to registry 
+  remove      remove project from registry
   scan        Show all projects managed by workspaces
   setup       initialize ~/.workspaces folder and ~/.workspaces/config
   wd          show project path
@@ -29,6 +34,8 @@ Flags:
   -h, --help             help for workspaces
       --log_dir string   log directory, default to ~/.workspaces/log
   -v, --verbose          -v or --verbose for debug information
+
+Use "workspaces [command] --help" for more information about a command.
 ```
 
 ## bash
