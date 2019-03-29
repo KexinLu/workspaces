@@ -1,10 +1,19 @@
 # workspaces
-A CLI to manage your workspaces
+
+Workspaces is a simple cli for workspace management.
+
+As software engineers we inevitably have to juggle between different projects. Maybe you have a good filesystem structure to organize your projects, but from time to time, things are scattered everywhere. Or sometimes you need a simple cli to give you the Path of a project in order to pipe it to other command.
+
+
+
+
 
 ## TODO:
 ```
-[ ] git: storing remote in git projects
-[ ] git: show current branch
+[ ] add prune
+[ ] add tag to projects
+[ ] list by tag
+[ ] auto-complete
 
 -----
 [ ] add docker support
